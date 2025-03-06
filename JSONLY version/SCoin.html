@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Finance Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        /* Enhanced CSS with more student-friendly styling */
+        :root {
+            --primary-blue: #2196F3;
+            --dark-blue: #1976D2;
+            --light-blue: #e3f2fd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f8ff, #b3d9ff);
+        }
+
+        .transaction-type {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .transaction-type label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: var(--light-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .transaction-type input[type="radio"]:checked + span {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .category-chip {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            background: var(--light-blue);
+            font-size: 0.9em;
+            margin: 3px;
+        }
+
+        /* Keep previous styles and add new ones below */
+        /* ... (previous CSS styles remain the same) ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="animate__animated animate__fadeIn">🎓 Student Finance Manager</h1>
+        
+        <!-- Add Transaction Form -->
+        <div class="card">
+            <h2>Add Transaction</h2>
+            <div class="input-group">
+                <div class="transaction-type">
+                    <label>
+                        <input type="radio" name="type" value="income" checked onchange="updateCategories()">
+                        <span>Income</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="type" value="expense" onchange="updateCategories()">
+                        <span>Expense</span>
+                    </label>
+                </div>
+                <input type="number" id="amount" placeholder="Amount" min="0" step="0.01">
+                <select id="category"></select>
+                <input type="date" id="date">
+                <button class="btn btn-primary" onclick="addTransaction()">Add Transaction</button>
+            </div>
+        </div>
+
+        <!-- Rest of the HTML remains similar -->
+        <!-- ... (previous HTML structure remains the same) ... -->
+    </div>
+
+    <script>
+        // Enhanced categories for students
+        const incomeCategories = [
+            { value: 'part-time', label: 'Part-Time Job' },
+            { value: 'freelance', label: 'Freelance Work' },
+            { value: 'scholarship', label: 'Scholarship' },
+            { value: 'allowance', label: 'Allowance' },
+            { value: 'gifts', label: 'Gifts' },
+            { value: 'investment-return', label: 'Investment Return' }
+        ];
+
+        const expenseCategories = [
+            { value: 'tuition', label: 'Tuition Fees' },
+            { value: 'books', label: 'Textbooks' },
+            { value: 'supplies', label: 'School Supplies' },
+            { value: 'food', label: 'Groceries' },
+            { value: 'eating-out', label: 'Eating Out' },
+            { value: 'transport', label: 'Transportation' },
+            { value: 'gas', label: 'Gas/Fuel' },
+            { value: 'rent', label: 'Rent' },
+            { value: 'utilities', label: 'Utilities' },
+            { value: 'entertainment', label: 'Entertainment' },
+            { value: 'savings', label: 'Savings' },
+            { value: 'investments', label: 'Investments' },
+            { value: 'subscriptions', label: 'Subscriptions' }
+        ];
+
+        // Modified transaction handling
+        function updateCategories() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const categorySelect = document.getElementById('category');
+            categorySelect.innerHTML = '';
+            
+            const categories = type === 'income' ? incomeCategories : expenseCategories;
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.value;
+                option.textContent = cat.label;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Modified render function with category chips
+        function renderTransactions() {
+            const container = document.getElementById('transactions');
+            container.innerHTML = '';
+            
+            filterTransactions().forEach(t => {
+                const transactionEl = document.createElement('div');
+                transactionEl.className = 'transaction-item';
+                transactionEl.innerHTML = `
+                    <div>${t.date}</div>
+                    <div class="category-chip">${getCategoryLabel(t.category)}</div>
+                    <div style="color: ${t.type === 'income' ? '#4CAF50' : '#f44336'}">
+                        ${t.type === 'income' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteTransaction(${t.id})">
+                        Delete
+                    </button>
+                `;
+                container.appendChild(transactionEl);
+            });
+        }
+
+        // Helper function to get category labels
+        function getCategoryLabel(value) {
+            const allCategories = [...incomeCategories, ...expenseCategories];
+            const category = allCategories.find(cat => cat.value === value);
+            return category ? category.label : value;
+        }
+
+        // Initial category setup
+        updateCategories();
+    </script>
+</body>
+</html>
