@@ -3,159 +3,655 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Finance Manager</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <title>Coinnect</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Enhanced CSS with more student-friendly styling */
         :root {
             --primary-blue: #2196F3;
             --dark-blue: #1976D2;
             --light-blue: #e3f2fd;
+            --border-radius: 8px;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f0f8ff, #b3d9ff);
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f0f8ff, #b3d9ff, #87CEEB);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
-        .transaction-type {
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
             display: flex;
+            flex-direction: column;
             gap: 15px;
-            margin-bottom: 15px;
+            margin: 15px 0;
         }
 
-        .transaction-type label {
+        .transaction-type-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+
+        .transaction-type-option {
             display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: var(--light-blue);
-            cursor: pointer;
-            transition: all 0.3s ease;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 2px solid #e9ecef;
+            transition: all 0.2s ease;
         }
 
-        .transaction-type input[type="radio"]:checked + span {
+        .transaction-type-option:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
+        }
+
+        .transaction-type-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-blue);
+        }
+
+        .recurring-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 2px solid #e9ecef;
+        }
+
+        .recurring-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-blue);
+        }
+
+        input, select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: var(--border-radius);
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
             background: var(--primary-blue);
             color: white;
         }
 
-        .category-chip {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
-            background: var(--light-blue);
-            font-size: 0.9em;
-            margin: 3px;
+        .btn-primary:hover {
+            background: var(--dark-blue);
+            transform: translateY(-1px);
         }
 
-        /* Keep previous styles and add new ones below */
-        /* ... (previous CSS styles remain the same) ... */
+        .balance-display {
+            font-size: 2em;
+            color: var(--dark-blue);
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 8px 0;
+            background: var(--light-blue);
+            border-radius: var(--border-radius);
+        }
+
+        .filter-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--dark-blue);
+            font-size: 0.9em;
+        }
+
+        .help-menu {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            top: calc(50% - 20px);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-section, .print-section * {
+                visibility: visible;
+            }
+            .print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+            }
+            .print-section table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .print-section th,
+            .print-section td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            .print-section th {
+                background-color: #f8f9fa;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="animate__animated animate__fadeIn">🎓 Student Finance Manager</h1>
-        
-        <!-- Add Transaction Form -->
+        <button class="btn btn-primary" onclick="showHelp()" style="position: fixed; top: 20px; right: 20px;">?</button>
+
+        <div class="help-menu card">
+            <span onclick="closeHelp()" style="cursor: pointer; float: right; font-size: 24px; color: var(--dark-blue);">×</span>
+            <h2 style="color: var(--dark-blue); margin-top: 0; border-bottom: 2px solid var(--light-blue); padding-bottom: 15px;">
+                📘 Student Finance Guide
+            </h2>
+            <div style="display: flex; flex-direction: column; gap: 25px; margin-top: 25px;">
+                <div>
+                    <h3 style="color: var(--primary-blue); margin: 0 0 12px 0; display: flex; align-items: center; gap: 3px;">
+                        <span>➕ Adding Transactions</span>
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 3px; color: #444;">
+                        <p>1. Select <strong>Income</strong> or <strong>Expense</strong></p>
+                        <p>2. Enter transaction name and amount</p>
+                        <p>3. Choose category and date</p>
+                        <p>4. Mark recurring if needed</p>
+                        <p>5. Click "Add Transaction"</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--primary-blue); margin: 0 0 12px 0; display: flex; align-items: center; gap: 3px;">
+                        <span>🗑️ Managing Transactions</span>
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 3px; color: #444;">
+                        <p>• Click the red <strong>Delete</strong> button to remove transactions</p>
+                        <p>• Use the search bar to find specific transactions</p>
+                        <p>• Filter by type and time period using the dropdowns</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--primary-blue); margin: 0 0 12px 0; display: flex; align-items: center; gap: 3px;">
+                        <span>📊 Generating Reports</span>
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 3px; color: #444;">
+                        <p>• Select desired time period for the report</p>
+                        <p>• For specific periods, choose "Specific Day/Week/Month" and select the date</p>
+                        <p>• Click "Generate PDF Report" to create a printable document</p>
+                        <p>• Reports include filtered transactions and current balance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="overlay" onclick="closeHelp()"></div>
+
+        <div class="print-section" style="display: none;">
+            <h1 style="color: var(--dark-blue); text-align: center; margin-bottom: 30px;">
+                Coinnect Financial Report
+            </h1>
+            <div id="print-balance" style="margin: 20px 0;"></div>
+            <div id="print-transactions"></div>
+        </div>
+
+        <h1 style="color: var(--dark-blue); margin-bottom: 30px; text-align: center;">Coinnect</h1>
+
         <div class="card">
-            <h2>Add Transaction</h2>
+            <h2 style="margin-top: 0; color: var(--dark-blue);">Add Transaction</h2>
             <div class="input-group">
-                <div class="transaction-type">
-                    <label>
-                        <input type="radio" name="type" value="income" checked onchange="updateCategories()">
+                <div class="transaction-type-group">
+                    <label class="transaction-type-option">
+                        <input type="radio" name="type" value="income" checked onchange="populateCategories()">
                         <span>Income</span>
                     </label>
-                    <label>
-                        <input type="radio" name="type" value="expense" onchange="updateCategories()">
+                    <label class="transaction-type-option">
+                        <input type="radio" name="type" value="expense" onchange="populateCategories()">
                         <span>Expense</span>
                     </label>
                 </div>
-                <input type="number" id="amount" placeholder="Amount" min="0" step="0.01">
+
+                <input type="text" id="transactionName" placeholder="Transaction Name" required>
+                <input type="number" id="amount" placeholder="Amount" step="0.01" required>
                 <select id="category"></select>
                 <input type="date" id="date">
+                <label class="recurring-option">
+                    <input type="checkbox" id="recurring">
+                    <span>Recurring Transaction</span>
+                </label>
                 <button class="btn btn-primary" onclick="addTransaction()">Add Transaction</button>
             </div>
         </div>
 
-        <!-- Rest of the HTML remains similar -->
-        <!-- ... (previous HTML structure remains the same) ... -->
+        <div class="card">
+            <h2 style="color: var(--dark-blue); margin-top: 0;">Current Balance</h2>
+            <div class="balance-display" id="balance">$0.00</div>
+        </div>
+
+        <div class="card">
+            <h2 style="color: var(--dark-blue); margin-top: 0;">Transaction History</h2>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Search Transactions</label>
+                    <input type="text" id="search" placeholder="Name, category, or date..." onkeyup="updateUI()">
+                </div>
+                <div class="filter-group">
+                    <label>Transaction Type</label>
+                    <select id="filterType" onchange="updateUI()">
+                        <option value="">All Types</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Time Period</label>
+                    <select id="timePeriod" onchange="updateUI()">
+                        <option value="all">All Time</option>
+                        <option value="day">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+            </div>
+            <div id="transactions" class="transaction-list"></div>
+        </div>
+
+        <div class="card">
+            <h2 style="color: var(--dark-blue); margin-top: 0;">Generate Report</h2>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label>Report Period</label>
+                    <select id="reportPeriod" onchange="toggleSpecificDates()">
+                        <option value="all">All Time</option>
+                        <option value="day">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="specific-day">Specific Day</option>
+                        <option value="specific-week">Specific Week</option>
+                        <option value="specific-month">Specific Month</option>
+                    </select>
+                </div>
+                <div class="filter-group" id="specificDayGroup" style="display: none;">
+                    <label>Select Day</label>
+                    <input type="date" id="specificDay">
+                </div>
+                <div class="filter-group" id="specificWeekGroup" style="display: none;">
+                    <label>Select Week (Start Date)</label>
+                    <input type="date" id="specificWeek">
+                </div>
+                <div class="filter-group" id="specificMonthGroup" style="display: none;">
+                    <label>Select Month</label>
+                    <input type="month" id="specificMonth">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="printReport()">Generate PDF Report</button>
+        </div>
     </div>
 
     <script>
-        // Enhanced categories for students
-        const incomeCategories = [
-            { value: 'part-time', label: 'Part-Time Job' },
-            { value: 'freelance', label: 'Freelance Work' },
-            { value: 'scholarship', label: 'Scholarship' },
-            { value: 'allowance', label: 'Allowance' },
-            { value: 'gifts', label: 'Gifts' },
-            { value: 'investment-return', label: 'Investment Return' }
-        ];
+        class Database {
+            constructor() {
+                this.transactionsKey = 'financeTransactions_v2';
+            }
 
-        const expenseCategories = [
-            { value: 'tuition', label: 'Tuition Fees' },
-            { value: 'books', label: 'Textbooks' },
-            { value: 'supplies', label: 'School Supplies' },
-            { value: 'food', label: 'Groceries' },
-            { value: 'eating-out', label: 'Eating Out' },
-            { value: 'transport', label: 'Transportation' },
-            { value: 'gas', label: 'Gas/Fuel' },
-            { value: 'rent', label: 'Rent' },
-            { value: 'utilities', label: 'Utilities' },
-            { value: 'entertainment', label: 'Entertainment' },
-            { value: 'savings', label: 'Savings' },
-            { value: 'investments', label: 'Investments' },
-            { value: 'subscriptions', label: 'Subscriptions' }
-        ];
+            saveTransactions(transactions) {
+                localStorage.setItem(this.transactionsKey, JSON.stringify(transactions));
+            }
 
-        // Modified transaction handling
-        function updateCategories() {
+            getTransactions() {
+                return JSON.parse(localStorage.getItem(this.transactionsKey)) || [];
+            }
+
+            addTransaction(transaction) {
+                const transactions = this.getTransactions();
+                transactions.push(transaction);
+                this.saveTransactions(transactions);
+            }
+
+            deleteTransaction(id) {
+                const transactions = this.getTransactions().filter(t => t.id !== id);
+                this.saveTransactions(transactions);
+            }
+        }
+
+        class Transaction {
+            constructor(name, type, amount, category, date, recurring = false) {
+                this.id = Date.now();
+                this.name = name;
+                this.type = type;
+                this.amount = parseFloat(amount);
+                this.category = category;
+                this.date = date || new Date().toISOString().split('T')[0];
+                this.recurring = recurring;
+            }
+        }
+
+        const financeDB = new Database();
+        let transactions = financeDB.getTransactions();
+        const validCategories = {
+            income: ['Salary', 'Freelance', 'Allowance', 'Scholarship', 'Investments', 'Other'],
+            expense: ['Tuition', 'Books', 'Rent', 'Food', 'Transport', 'Entertainment', 'Other']
+        };
+
+        function isSameDay(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        }
+
+        function isSameWeek(d1, d2) {
+            const oneDay = 86400000;
+            const diff = (d2 - d1) / oneDay;
+            return diff >= 0 && diff <= 7;
+        }
+
+        function isSameMonth(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth();
+        }
+
+        function toggleSpecificDates() {
+            const period = document.getElementById('reportPeriod').value;
+            document.getElementById('specificDayGroup').style.display = 
+                period === 'specific-day' ? 'flex' : 'none';
+            document.getElementById('specificWeekGroup').style.display = 
+                period === 'specific-week' ? 'flex' : 'none';
+            document.getElementById('specificMonthGroup').style.display = 
+                period === 'specific-month' ? 'flex' : 'none';
+        }
+
+        function addTransaction() {
+            const name = document.getElementById('transactionName').value.trim();
             const type = document.querySelector('input[name="type"]:checked').value;
-            const categorySelect = document.getElementById('category');
-            categorySelect.innerHTML = '';
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+            const recurring = document.getElementById('recurring').checked;
+            const today = new Date().toISOString().split('T')[0];
+
+            if (name.length > 50) {
+                alert('Transaction name must be under 50 characters');
+                return;
+            }
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('Amount must be a positive number');
+                return;
+            }
+
+            if (date > today) {
+                alert('Future dates are not allowed');
+                return;
+            }
+
+            if (!validCategories[type].includes(category)) {
+                alert('Invalid category selected');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9\s.,'\-()]+$/.test(name)) {
+                alert('Name contains invalid characters');
+                return;
+            }
+
+            if (!name || !document.getElementById('amount').value || !category) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const newTransaction = new Transaction(name, type, amount, category, date, recurring);
+            financeDB.addTransaction(newTransaction);
+            transactions = financeDB.getTransactions();
+            updateUI();
+            clearForm();
+        }
+
+        function deleteTransaction(id) {
+            financeDB.deleteTransaction(id);
+            transactions = financeDB.getTransactions();
+            updateUI();
+        }
+
+        function filterTransactions() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+            const timePeriod = document.getElementById('timePeriod').value;
+            const now = new Date();
             
-            const categories = type === 'income' ? incomeCategories : expenseCategories;
-            
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.value;
-                option.textContent = cat.label;
-                categorySelect.appendChild(option);
+            return transactions.filter(t => {
+                const matchesSearch = t.name.toLowerCase().includes(searchTerm) ||
+                                      t.category.toLowerCase().includes(searchTerm) ||
+                                      t.date.includes(searchTerm);
+                
+                const matchesType = !filterType || t.type === filterType;
+                
+                const transactionDate = new Date(t.date);
+                let matchesTime = true;
+                
+                switch(timePeriod) {
+                    case 'day': matchesTime = isSameDay(transactionDate, now); break;
+                    case 'week': matchesTime = isSameWeek(transactionDate, now); break;
+                    case 'month': matchesTime = isSameMonth(transactionDate, now); break;
+                }
+                
+                return matchesSearch && matchesType && matchesTime;
             });
         }
 
-        // Modified render function with category chips
-        function renderTransactions() {
-            const container = document.getElementById('transactions');
-            container.innerHTML = '';
-            
-            filterTransactions().forEach(t => {
-                const transactionEl = document.createElement('div');
-                transactionEl.className = 'transaction-item';
-                transactionEl.innerHTML = `
-                    <div>${t.date}</div>
-                    <div class="category-chip">${getCategoryLabel(t.category)}</div>
-                    <div style="color: ${t.type === 'income' ? '#4CAF50' : '#f44336'}">
-                        ${t.type === 'income' ? '+' : '-'}$${Math.abs(t.amount).toFixed(2)}
-                    </div>
-                    <button class="btn btn-danger" onclick="deleteTransaction(${t.id})">
-                        Delete
-                    </button>
-                `;
-                container.appendChild(transactionEl);
-            });
+    function updateUI() {
+        const filteredTransactions = filterTransactions();
+        const balance = transactions.reduce((acc, t) => 
+        t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
+    
+        document.getElementById('balance').textContent = `$${balance.toFixed(2)}`;
+
+    const container = document.getElementById('transactions');
+    container.innerHTML = filteredTransactions.map(t => {
+        // Convert ISO date (YYYY-MM-DD) to MM/DD/YYYY
+        const [year, month, day] = t.date.split('-');
+        const formattedDate = `${month}/${day}/${year}`;
+
+        return `
+            <div class="transaction-item">
+                <div style="flex: 2;">
+                    <div style="font-weight: 600;">${t.name}</div>
+                    <div style="font-size: 0.9em; color: #666;">${formattedDate}</div>
+                </div>
+                <div style="flex: 1;">${t.category}</div>
+                <div style="flex: 1; color: ${t.type === 'income' ? '#4CAF50' : '#f44336'}; font-weight: 600;">
+                    $${t.amount.toFixed(2)}
+                </div>
+                <button class="btn btn-danger" onclick="deleteTransaction(${t.id})" 
+                        style="background: #f44336; color: white;">Delete</button>
+            </div>
+        `;
+    }).join('');
+}
+
+        function printReport() {
+            const reportPeriod = document.getElementById('reportPeriod').value;
+            const now = new Date();
+            let filtered = [];
+
+            switch(reportPeriod) {
+                case 'specific-day':
+                    const dayDate = new Date(document.getElementById('specificDay').value);
+                    filtered = transactions.filter(t => isSameDay(new Date(t.date), dayDate));
+                    break;
+                case 'specific-week':
+                    const weekDate = new Date(document.getElementById('specificWeek').value);
+                    filtered = transactions.filter(t => 
+                        isSameWeek(new Date(t.date), weekDate));
+                    break;
+                case 'specific-month':
+                    const monthDate = new Date(document.getElementById('specificMonth').value);
+                    filtered = transactions.filter(t => 
+                        isSameMonth(new Date(t.date), monthDate));
+                    break;
+                default:
+                    filtered = transactions.filter(t => {
+                        const transactionDate = new Date(t.date);
+                        switch(reportPeriod) {
+                            case 'day': return isSameDay(transactionDate, now);
+                            case 'week': return isSameWeek(transactionDate, now);
+                            case 'month': return isSameMonth(transactionDate, now);
+                            default: return true;
+                        }
+                    });
+            }
+
+            const balance = filtered.reduce((acc, t) => 
+                t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
+
+            document.getElementById('print-balance').innerHTML = `
+                <h2 style="color: var(--dark-blue); text-align: center; margin-bottom: 20px;">
+                    ${reportPeriod.charAt(0).toUpperCase() + reportPeriod.slice(1)} Report - Balance: $${balance.toFixed(2)}
+                </h2>
+            `;
+
+            document.getElementById('print-transactions').innerHTML = `
+                <table style="width: 90%;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtered.map(t => `
+                            <tr>
+                                <td>${t.date}</td>
+                                <td>${t.name}</td>
+                                <td>${t.category}</td>
+                                <td>${t.type.charAt(0).toUpperCase() + t.type.slice(1)}</td>
+                                <td style="color: ${t.type === 'income' ? '#4CAF50' : '#f44336'}">
+                                    $${t.amount.toFixed(2)}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.querySelector('.print-section').style.display = 'block';
+            window.print();
+            document.querySelector('.print-section').style.display = 'none';
         }
 
-        // Helper function to get category labels
-        function getCategoryLabel(value) {
-            const allCategories = [...incomeCategories, ...expenseCategories];
-            const category = allCategories.find(cat => cat.value === value);
-            return category ? category.label : value;
+        function populateCategories() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            const select = document.getElementById('category');
+            select.innerHTML = validCategories[type].map(c => `<option>${c}</option>`).join('');
         }
 
-        // Initial category setup
-        updateCategories();
+        function clearForm() {
+            document.getElementById('transactionName').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('date').value = '';
+            document.getElementById('recurring').checked = false;
+        }
+
+        function showHelp() {
+            document.querySelector('.help-menu').style.display = 'block';
+            document.querySelector('.overlay').style.display = 'block';
+        }
+
+        function closeHelp() {
+            document.querySelector('.help-menu').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCategories();
+            updateUI();
+        });
     </script>
 </body>
 </html>
